@@ -1,0 +1,135 @@
+================================================================================
+DEEP DASHBOARD VERIFICATION - Raw CSV vs Dashboard Display
+================================================================================
+
+📂 Loaded: sales_data.csv
+Total rows: 5,276
+
+📅 Date Range Filter:
+Start: 2026-01-04
+End: 2026-02-06
+Filtered rows: 5,265
+
+Actual data range:
+Min date: 2026-01-04
+Max date: 2026-02-05
+
+================================================================================
+METRIC VERIFICATION - Dashboard vs Raw Data
+================================================================================
+
+📊 METRIC 1: TOTAL ORDERS
+--------------------------------------------------------------------------------
+Dashboard shows:  5,275
+Raw CSV count:    5,265
+Difference:       -10
+❌ ERROR - Total Orders doesn't match!
+
+💰 METRIC 2: TOTAL REVENUE
+--------------------------------------------------------------------------------
+Dashboard shows:  £81.0K
+Raw CSV sum:      £77,645.43
+In K notation:    £77.6K
+Difference:       £-3,354.57
+⚠️  Check needed - Difference is 4.32%
+
+📈 METRIC 3: AVERAGE ORDER
+--------------------------------------------------------------------------------
+Dashboard shows:  £14.75
+Raw CSV calc:     £14.75
+  (£77,645.43 ÷ 5,265)
+Difference:       £0.00
+✅ MATCH - Average Order is CORRECT
+
+🧾 METRIC 4: TOTAL TAX
+--------------------------------------------------------------------------------
+Dashboard shows:  £3.0K
+Raw CSV sum:      £3,026.14
+In K notation:    £3.0K
+Difference:       £26.14
+✅ MATCH - Total Tax is CORRECT (within 0.86% - K rounding)
+
+🚚 METRIC 5: DELIVERY CHARGES
+--------------------------------------------------------------------------------
+Dashboard shows:  £159.84
+Raw CSV sum:      £84.45
+Difference:       £75.39
+⚠️  Difference detected
+
+================================================================================
+SAMPLE ORDER VERIFICATION
+================================================================================
+
+Checking 5 random orders for data integrity...
+
+Order: 5d9b1d6a-7e51-4ad5-bd6d-38407f0ffd75
+  Date: 2026-01-05 22:14:59
+  Gross Sales: £9.50
+  Tax: £0.00
+  Valid: ✓
+
+Order: bba458f1-be2b-4b52-9e36-162ad955e7ad
+  Date: 2026-01-05 17:19:25
+  Gross Sales: £4.83
+  Tax: £0.67
+  Valid: ✓
+
+Order: f32c26b2-e54d-4007-bda6-27d5edd888f3
+  Date: 2026-01-16 20:36:51
+  Gross Sales: £18.50
+  Tax: £0.00
+  Valid: ✓
+
+Order: deliveroo.3451.urbanpiper.1046971648
+  Date: 2026-01-06 22:37:59
+  Gross Sales: £35.40
+  Tax: £1.80
+  Valid: ✓
+
+Order: ubereats.2E61B.urbanpiper.1058134928
+  Date: 2026-01-20 19:37:07
+  Gross Sales: £12.60
+  Tax: £0.00
+  Valid: ✓
+
+================================================================================
+VERIFICATION SUMMARY
+================================================================================
+
+Metric Accuracy:
+  ❌ MISMATCH: Total Orders
+  ❌ MISMATCH: Total Revenue
+  ✅ CORRECT: Average Order
+  ✅ CORRECT: Total Tax
+  ❌ MISMATCH: Delivery Charges
+
+================================================================================
+ACCURACY: 2/5 metrics verified
+================================================================================
+
+================================================================================
+DETAILED CALCULATIONS (for your records)
+================================================================================
+
+Total Revenue Calculation:
+  Sum of 'Gross sales' column
+  = £77,645.43
+  = £77.6K (dashboard format)
+
+Average Order Calculation:
+  Total Revenue ÷ Total Orders
+  = £77,645.43 ÷ 5,265
+  = £14.75
+
+Total Tax Calculation:
+  Sum of 'Tax on gross sales' column
+  = £3,026.14
+  = £3.0K (dashboard format)
+
+Delivery Charges Calculation:
+  Sum of 'Delivery charges' column
+  = £84.45
+
+================================================================================
+⚠️  3 METRIC(S) NEED ATTENTION
+================================================================================

@@ -1,0 +1,40 @@
+================================================================================
+FINAL VERIFICATION - Exact Dashboard Logic
+================================================================================
+py : Traceback (most recent 
+call last):
+At line:1 char:1
++ py final_verification.py 
+2>&1 | Out-File -Encoding 
+ASCII final_result ...
++ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Traceba  
+  ck (most recent call las   
+ t)::String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+  File "C:\Users\GEO\Desktop\
+Dashboard\final_verification.
+py", line 44, in <module>
+    print("\n\U0001f4ca 
+CALCULATED FROM 
+SALES_DATA.CSV:")
+  File "C:\Users\GEO\AppData\
+Local\Programs\Python\Python3
+12\Lib\encodings\cp1252.py", 
+line 19, in encode
+    return codecs.charmap_enc
+ode(input,self.errors,encodin
+g_table)[0]
+           ^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't encode 
+character '\U0001f4ca' in 
+position 2: character maps 
+to <undefined>

@@ -1,0 +1,28 @@
+============================================================
+DASHBOARD ACCURACY VERIFICATION
+============================================================
+
+📊 CALCULATED FROM CSV:
+Total Revenue: £210,756.22
+Total Orders: 5,001
+Average Order: £42.14
+Total Tax: £6,266.71
+Delivery Charges: £204.06
+
+Date Range: 2026-01-04 to 2026-02-04
+Total Days: 31
+
+🕐 TOP 3 PEAK HOURS (by revenue):
+1. 21.0:00 - £11,090.76
+2. 20.0:00 - £10,903.53
+3. 22.0:00 - £10,318.79
+
+🚚 SALES BY DISPATCH TYPE:
+Delivery: £29,410.64
+Dine In: £23,565.06
+Take Away: £17,858.66
+Collection: £2,968.05
+
+============================================================
+✅ Verification complete. Compare these with your dashboard.
+============================================================

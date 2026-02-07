@@ -1,0 +1,13 @@
+COLUMN COMPARISON:
+============================================================
+
+Total using 'Gross sales': £73,802.41
+Total using 'Revenue': £76,823.14
+
+Total Orders: 5,001
+Average Order (Gross sales): £14.76
+Total Tax: £2,880.39
+
+============================================================
+DASHBOARD USES 'Revenue' COLUMN
+============================================================

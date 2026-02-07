@@ -1,0 +1,37 @@
+WEEKLY PATTERN VERIFICATION
+======================================================================
+
+SALES BY DAY OF WEEK:
+----------------------------------------------------------------------
+Monday       £  9,624.02  ( 653 orders)
+Tuesday      £ 10,315.60  ( 690 orders)
+Wednesday    £  8,442.31  ( 569 orders)
+Thursday     £  7,716.94  ( 547 orders)
+Friday       £ 11,482.93  ( 778 orders)
+Saturday     £ 12,869.64  ( 871 orders)
+Sunday       £ 13,350.97  ( 892 orders)
+
+======================================================================
+BUSIEST DAYS (Top 3):
+----------------------------------------------------------------------
+1. Sunday       £ 13,350.97  ( 892 orders)
+2. Saturday     £ 12,869.64  ( 871 orders)
+3. Friday       £ 11,482.93  ( 778 orders)
+
+======================================================================
+DASHBOARD SHOWS (from your screenshot):
+----------------------------------------------------------------------
+Busiest Days:
+  1. Sunday:   £13,474.43 (898 orders)
+  2. Saturday: £12,869.64 (871 orders)
+  3. Friday:   £11,482.93 (778 orders)
+
+Bar Chart (approx readings):
+  Monday:    ~10k
+  Tuesday:   ~10k
+  Wednesday: ~8k
+  Thursday:  ~8k
+  Friday:    ~12k
+  Saturday:  ~13k
+  Sunday:    ~13k
+======================================================================

@@ -1,0 +1,32 @@
+DISPATCH TYPE VERIFICATION
+======================================================================
+
+REVENUE BY DISPATCH TYPE:
+----------------------------------------------------------------------
+Delivery        £ 29,410.64  ( 39.9%)
+Dine In         £ 23,565.06  ( 31.9%)
+Take Away       £ 17,858.66  ( 24.2%)
+Collection      £  2,968.05  (  4.0%)
+
+ORDER COUNT BY DISPATCH TYPE:
+----------------------------------------------------------------------
+Delivery             1,597 orders
+Dine In              1,782 orders
+Take Away            1,436 orders
+Collection             185 orders
+
+======================================================================
+DASHBOARD SHOWS (from your screenshot):
+----------------------------------------------------------------------
+Revenue Distribution:
+  Delivery:    39.9%
+  Dine In:     31.8%
+  Take Away:   24.2%
+  Collection:   4.1%
+
+Order Counts (approx from bar chart):
+  Delivery:   ~1650 orders
+  Dine In:    ~1850 orders
+  Take Away:  ~1500 orders
+  Collection:  ~200 orders
+======================================================================
