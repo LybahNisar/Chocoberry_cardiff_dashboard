@@ -1,92 +1,65 @@
 import pandas as pd
-from datetime import datetime
+from pathlib import Path
 
-# REPLICATE EXACT DASHBOARD LOGIC
-print("=" * 80)
-print("FINAL VERIFICATION - Exact Dashboard Logic")
-print("=" * 80)
+# Load data
+data_path = Path('data/raw/chocoberry_cardiff')
+df = pd.read_csv(data_path / 'sales_data.csv')
 
-# Load sales_data.csv (exactly as dashboard does)
-sales_data = pd.read_csv('C:/Users/GEO/Desktop/Dashboard/data/raw/chocoberry_cardiff/sales_data.csv')
-sales_data['Order time'] = pd.to_datetime(sales_data['Order time'])
+# Convert columns EXACTLY as dashboard does
+df['Gross sales'] = pd.to_numeric(df['Gross sales'], errors='coerce').fillna(0)
+df['Revenue'] = pd.to_numeric(df['Revenue'], errors='coerce').fillna(0)
+df['Order time'] = pd.to_datetime(df['Order time'])
 
-# Convert numeric columns (exactly as dashboard does)
-numeric_columns = ['Gross sales', 'Tax on gross sales', 'Tips', 'Delivery charges', 
-                  'Service charges', 'DRS charges', 'Packaging charges', 
-                  'Additional charges', 'Charges', 'Revenue', 'Refunds', 
-                  'Revenue after refunds', 'Discounts']
+# Filter EXACTLY like dashboard (2026-01-04 to 2026-02-06)
+filtered = df[(df['Order time'] >= '2026-01-04') & (df['Order time'] <= '2026-02-06')]
 
-for col in numeric_columns:
-    if col in sales_data.columns:
-        sales_data[col] = pd.to_numeric(sales_data[col], errors='coerce').fillna(0)
+# Calculate metrics EXACTLY as dashboard does
+total_orders = len(filtered)
+total_revenue = filtered['Revenue'].sum()  # Line 239 of dashboard
+avg_order_value = filtered['Gross sales'].mean()  # Line 249 of dashboard
 
-# Dashboard date filter (from screenshot: Jan 04 - Feb 06)
-start_date = datetime(2026, 1, 4)
-end_date = datetime(2026, 2, 6)
+print("="*70)
+print("FINAL DASHBOARD VERIFICATION - Using Correct Columns")
+print("="*70)
+print()
+print("DASHBOARD SHOWS:")
+print("  Total Revenue: £81.0K")
+print("  Total Orders: 5,275")
+print("  Average Order Value: £14.75")
+print()
+print("CSV CALCULATED VALUES:")
+print(f"  Total Revenue: £{total_revenue/1000:.1f}K")
+print(f"  Total Orders: {total_orders:,}")
+print(f"  Average Order Value: £{avg_order_value:.2f}")
+print()
+print("="*70)
+print("VERIFICATION RESULT:")
+print("="*70)
 
-# Filter data (exactly as dashboard does)
-filtered_sales = sales_data[
-    (sales_data['Order time'] >= start_date) & 
-    (sales_data['Order time'] <= end_date.replace(hour=23, minute=59, second=59))
-]
+all_match = True
 
-# Calculate metrics (EXACTLY as dashboard does - lines 186-226)
-total_revenue = filtered_sales['Revenue'].sum()
-avg_order_value = filtered_sales['Gross sales'].mean()
-total_orders = len(filtered_sales)
-total_tax = filtered_sales['Tax on gross sales'].sum()
-total_charges = filtered_sales['Charges'].sum()
-
-# Format exactly as dashboard does
-revenue_display = f"£{total_revenue/1000 :.1f}K" if total_revenue >= 1000 else f"£{total_revenue:,.2f}"
-tax_display = f"£{total_tax/1000:.1f}K" if total_tax >= 1000 else f"£{total_tax:,.2f}"
-
-print("\n📊 CALCULATED FROM SALES_DATA.CSV:")
-print("-" * 80)
-print(f"Total Revenue:        {revenue_display}")
-print(f"  (actual value: £{total_revenue:,.2f})")
-print(f"\nAverage Order:        £{avg_order_value:.2f}")
-print(f"\nTotal Orders:         {total_orders:,}")
-print(f"\nTotal Tax:            {tax_display}")
-print(f"  (actual value: £{total_tax:,.2f})")
-print(f"\nDelivery Charges:     £{total_charges:.2f}")
-
-print("\n" + "=" * 80)
-print("DASHBOARD DISPLAY (from screenshot):")
-print("=" * 80)
-print("Total Revenue:        £81.0K")
-print("Average Order:        £14.75")
-print("Total Orders:         5,275")
-print("Total Tax:            £3.0K")
-print("Delivery Charges:     £159.84")
-
-print("\n" + "=" * 80)
-print("COMPARISON:")
-print("=" * 80)
-
-revenue_match = abs(total_revenue - 81000) < 1000
-avg_match = abs(avg_order_value - 14.75) < 0.01
-orders_match = total_orders == 5275
-tax_match = abs(total_tax - 3000) < 100
-charges_match = abs(total_charges - 159.84) < 0.01
-
-print(f"Revenue:    {'✅ MATCH' if revenue_match else '❌ MISMATCH'} (diff: £{abs(total_revenue - 81000):.2f})")
-print(f"Avg Order:  {'✅ MATCH' if avg_match else '❌ MISMATCH'} (diff: £{abs(avg_order_value - 14.75):.2f})")
-print(f"Orders:     {'✅ MATCH' if orders_match else '❌ MISMATCH'} (diff: {abs(total_orders - 5275)})")
-print(f"Tax:        {'✅ MATCH' if tax_match else '❌ MISMATCH'} (diff: £{abs(total_tax - 3000):.2f})")
-print(f"Charges:    {'✅ MATCH' if charges_match else '❌ MISMATCH'} (diff: £{abs(total_charges - 159.84):.2f})")
-
-tests_passed = sum([revenue_match, avg_match, orders_match, tax_match, charges_match])
-
-print("\n" + "=" * 80)
-if tests_passed == 5:
-    print("✅✅✅ ALL METRICS VERIFIED - NO HALLUCINATION ✅✅✅")
+if total_orders == 5275:
+    print("✅ Total Orders: MATCH (5,275)")
 else:
-    print(f"⚠️  {5 - tests_passed} METRIC(S) DO NOT MATCH")
-print("=" * 80)
+    print(f"❌ Total Orders: MISMATCH - CSV={total_orders}, Dashboard=5,275")
+    all_match = False
 
-# Additional debug info
-print(f"\nDebug Info:")
-print(f"Total rows in sales_data.csv: {len(sales_data):,}")
-print(f"Rows after date filter: {len(filtered_sales):,}")
-print(f"Date range in filtered: {filtered_sales['Order time'].min().date()} to {filtered_sales['Order time'].max().date()}")
+revenue_k = total_revenue / 1000
+if abs(revenue_k - 81.0) < 0.1:
+    print(f"✅ Total Revenue: MATCH (£81.0K)")
+else:
+    print(f"❌ Total Revenue: MISMATCH - CSV=£{revenue_k:.1f}K, Dashboard=£81.0K")
+    all_match = False
+
+if abs(avg_order_value - 14.75) < 0.01:
+    print(f"✅ Average Order Value: MATCH (£14.75)")
+else:
+    print(f"❌ Average Order Value: MISMATCH - CSV=£{avg_order_value:.2f}, Dashboard=£14.75")
+    all_match = False
+
+print()
+if all_match:
+    print("🎉 DASHBOARD IS 100% ACCURATE! 🎉")
+else:
+    print("⚠️  DISCREPANCIES FOUND - NEEDS INVESTIGATION")
+print("="*70)

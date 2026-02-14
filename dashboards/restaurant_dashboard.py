@@ -10,6 +10,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from pathlib import Path
+import sys
+
+# Add current directory to path to allow importing local modules
+sys.path.append(str(Path(__file__).parent))
+from menu_analysis import show_menu_analysis
 
 # ============================================================================
 # PASSWORD PROTECTION
@@ -89,34 +94,10 @@ st.markdown("""
         color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    /* Make metric text visible */
-    .stMetric {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
-    }
-    .stMetric label {
-        color: #333333 !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-    }
-    .stMetric [data-testid="stMetricValue"] {
-        color: #1f1f1f !important;
-        font-size: 1.5rem !important;
-        font-weight: bold !important;
-        white-space: nowrap !important;
-        overflow: visible !important;
-        text-overflow: clip !important;
-    }
-    .stMetric [data-testid="stMetricDelta"] {
-        color: #666666 !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# Data loading function with caching
+# LOAD DATA
 @st.cache_data
 def load_data():
     """Load all CSV files"""
@@ -135,52 +116,29 @@ def load_data():
         
         for col in numeric_columns:
             if col in sales_data.columns:
+                if sales_data[col].dtype == 'object':
+                    sales_data[col] = sales_data[col].str.replace(',', '', regex=False)
                 sales_data[col] = pd.to_numeric(sales_data[col], errors='coerce').fillna(0)
         
-        # Load summary files
-        sales_overview = pd.read_csv(data_path / 'sales_overview.csv')
-        sales_overview['Order time'] = pd.to_datetime(sales_overview['Order time'], errors='coerce')
-        
-        gross_sales_per_day = pd.read_csv(data_path / 'gross_sales_per_day.csv')
-        gross_sales_by_dispatch = pd.read_csv(data_path / 'gross_sales_by_dispatch_type.csv')
-        gross_sales_by_hour = pd.read_csv(data_path / 'gross_sales_by_hour_of_day.csv')
-        gross_sales_by_channel = pd.read_csv(data_path / 'gross_sales_by_sales_channel.csv')
-        gross_sales_by_day_of_week = pd.read_csv(data_path / 'gross_sales_per_day_of_week.csv')
-        
-        return {
-            'sales_data': sales_data,
-            'sales_overview': sales_overview,
-            'gross_sales_per_day': gross_sales_per_day,
-            'gross_sales_by_dispatch': gross_sales_by_dispatch,
-            'gross_sales_by_hour': gross_sales_by_hour,
-            'gross_sales_by_channel': gross_sales_by_channel,
-            'gross_sales_by_day_of_week': gross_sales_by_day_of_week
-        }
+        return sales_data
     except Exception as e:
-        st.error(f"Error loading data: {str(e)}")
+        st.error(f"Error loading data: {e}")
         return None
 
-# Load data
-data = load_data()
+sales_data = load_data()
 
-if data is None:
+if sales_data is None:
     st.stop()
 
-# Extract dataframes
-sales_data = data['sales_data']
-sales_overview = data['sales_overview']
-
-# ============================================================================
-# SIDEBAR - Filters
-# ============================================================================
-
-st.sidebar.title("🎛️ Dashboard Controls")
+# SIDEBAR FILTERS
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3170/3170733.png", width=100)
+st.sidebar.title("Filters")
 
 # Date range filter
-st.sidebar.subheader("📅 Date Range")
 min_date = sales_data['Order time'].min().date()
 max_date = sales_data['Order time'].max().date()
 
+st.sidebar.subheader("📅 Date Range")
 date_range = st.sidebar.date_input(
     "Select Date Range",
     value=(min_date, max_date),
@@ -226,64 +184,42 @@ st.sidebar.info(f"📊 **{len(filtered_sales):,}** transactions selected")
 
 # Header
 st.markdown('<h1 class="main-header">🍽️ Restaurant Analytics Dashboard</h1>', unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center; color: #666; font-size: 1.2rem;'>Chocoberry Cardiff | {start_date.strftime('%b %d, %Y')} - {end_date.strftime('%b %d, %Y')}</p>", unsafe_allow_html=True)
-st.markdown("---")
+st.markdown(f"**Analytics Period:** {start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}")
 
-# ============================================================================
+# Data quality notice
+if end_date >= pd.to_datetime('2026-02-13').date():
+    st.info("📊 **Data Quality Notice:** Data for February 13, 2026 is incomplete (partial day). For accurate trend analysis, we recommend using the date range **January 4 - February 12, 2026** (40 complete days).")
+
+
 # KPI METRICS ROW
-# ============================================================================
-
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     total_revenue = filtered_sales['Revenue'].sum()
-    # Format large numbers with K suffix to prevent truncation
     revenue_display = f"£{total_revenue/1000:.1f}K" if total_revenue >= 1000 else f"£{total_revenue:,.2f}"
-    st.metric(
-        label="💰 Total Revenue",
-        value=revenue_display,
-        delta=f"{len(filtered_sales)} orders"
-    )
+    st.metric("💰 Total Revenue", revenue_display, f"{len(filtered_sales)} orders")
 
 with col2:
     avg_order_value = filtered_sales['Gross sales'].mean()
-    st.metric(
-        label="📊 Average Order",
-        value=f"£{avg_order_value:.2f}",
-        delta=f"Per transaction"
-    )
+    st.metric("📊 Average Order", f"£{avg_order_value:.2f}", "Per transaction")
 
 with col3:
     total_orders = len(filtered_sales)
-    st.metric(
-        label="🧾 Total Orders",
-        value=f"{total_orders:,}",
-        delta=f"All time"
-    )
+    st.metric("🧾 Total Orders", f"{total_orders:,}", "All time")
 
 with col4:
     total_tax = filtered_sales['Tax on gross sales'].sum()
-    # Format large numbers with K suffix to prevent truncation
     tax_display = f"£{total_tax/1000:.1f}K" if total_tax >= 1000 else f"£{total_tax:,.2f}"
-    st.metric(
-        label="💷 Total Tax",
-        value=tax_display,
-        delta="Collected"
-    )
+    st.metric("💷 Total Tax", tax_display, "Collected")
 
 with col5:
     total_charges = filtered_sales['Charges'].sum()
-    st.metric(
-        label="📦 Delivery Charges",
-        value=f"£{total_charges:.2f}",
-        delta="Total fees"
-    )
-
+    st.metric("📦 Delivery Charges", f"£{total_charges:.2f}", "Total fees")
 
 st.markdown("---")
 
 # ============================================================================
-# PERFORMANCE TRENDS ANALYSIS
+# SECTION 1: PERFORMANCE TRENDS
 # ============================================================================
 
 st.header("📊 Performance Trends")
@@ -329,7 +265,6 @@ col1, col2 = st.columns(2)
 with col1:
     # 7-Day Rolling Average Chart
     st.subheader("📈 7-Day Rolling Average Trend")
-    
     fig_rolling = go.Figure()
     
     # Daily revenue (light line)
@@ -351,546 +286,283 @@ with col1:
         line=dict(color='#FF6B6B', width=3)
     ))
     
-    fig_rolling.update_layout(
-        height=350,
-        xaxis_title="Date",
-        yaxis_title="Revenue (£)",
-        hovermode='x unified',
-        showlegend=True
-    )
-    
+    fig_rolling.update_layout(height=350, xaxis_title="Date", yaxis_title="Revenue (£)", hovermode='x unified', showlegend=True)
     st.plotly_chart(fig_rolling, use_container_width=True)
     
-    # Current 7-day average
     current_7d_avg = daily_data['Revenue_7d_avg'].iloc[-1]
-    st.metric(
-        "Current 7-Day Average", 
-        f"£{current_7d_avg:,.2f}/day",
-        help="Average daily revenue over the last 7 days"
-    )
+    st.metric("Current 7-Day Average", f"£{current_7d_avg:,.2f}/day", "Average daily revenue over last 7 days")
 
 with col2:
     # Week-over-Week Comparison
     st.subheader("📅 Week-over-Week Growth")
-    
-    # Show week comparison metrics
     col_a, col_b = st.columns(2)
-    
     with col_a:
-        st.metric(
-            "Revenue Growth",
-            f"{wow_revenue_change:+.1f}%",
-            delta=f"vs last week",
-            delta_color="normal" if wow_revenue_change >= 0 else "inverse"
-        )
-    
+        st.metric("Revenue Growth", f"{wow_revenue_change:+.1f}%", "vs last week", delta_color="normal" if wow_revenue_change >= 0 else "inverse")
     with col_b:
-        st.metric(
-            "Orders Growth",
-            f"{wow_orders_change:+.1f}%",
-            delta=f"vs last week",
-            delta_color="normal" if wow_orders_change >= 0 else "inverse"
-        )
+        st.metric("Orders Growth", f"{wow_orders_change:+.1f}%", "vs last week", delta_color="normal" if wow_orders_change >= 0 else "inverse")
     
-    # Weekly breakdown table
     st.write("**Weekly Performance:**")
-    
-    if len(weekly_data) >= 5:
-        recent_weeks = weekly_data.tail(5).copy()
-    else:
-        recent_weeks = weekly_data.copy()
-    
+    recent_weeks = weekly_data.tail(5).copy()
     recent_weeks['Week Start'] = pd.to_datetime(recent_weeks['Date']).dt.strftime('%b %d')
     recent_weeks['Revenue'] = recent_weeks['Revenue'].apply(lambda x: f"£{x:,.0f}")
     recent_weeks['Orders'] = recent_weeks['Orders'].apply(lambda x: f"{x:,.0f}")
     
-    st.dataframe(
-        recent_weeks[['Week Start', 'Revenue', 'Orders']],
-        hide_index=True,
-        use_container_width=True
-    )
+    st.dataframe(recent_weeks[['Week Start', 'Revenue', 'Orders']], hide_index=True, use_container_width=True)
     
-    # Trend indicator
-    if wow_revenue_change > 5:
-        st.success("🚀 Strong growth this week!")
-    elif wow_revenue_change > 0:
-        st.info("📈 Growing steadily")
-    elif wow_revenue_change > -5:
-        st.warning("📊 Revenue slightly down")
-    else:
-        st.error("⚠️ Significant decline - investigate!")
+    # Data quality notice for incomplete weeks
+    if len(weekly_data) > 0:
+        latest_week_start = pd.to_datetime(weekly_data.iloc[-1]['Date'])
+        latest_week_orders = weekly_data.iloc[-1]['Orders']
+        
+        # Check if current week is incomplete (less than 7 days or unusually low orders)
+        days_in_current_week = (pd.to_datetime(max_date) - latest_week_start).days + 1
+        
+        if days_in_current_week < 7 or latest_week_orders < 800:
+            st.info(f"ℹ️ **Data Quality Notice:** The current week (starting {latest_week_start.strftime('%b %d')}) contains only {days_in_current_week} day(s) of data. Week-over-week comparisons may not reflect actual performance. For accurate trend analysis, compare complete weeks only.")
 
 st.markdown("---")
 
 # ============================================================================
-# REQUIREMENT 1: SALES DASHBOARDS
+# SECTION 2: SALES PERFORMANCE (TABS)
 # ============================================================================
 
 st.header("📈 Sales Performance")
-
 tab1, tab2, tab3 = st.tabs(["Daily Sales", "Weekly Trends", "Monthly Overview"])
 
 with tab1:
     st.subheader("Daily Sales Trend")
-    
-    # Group by date
-    daily_sales = filtered_sales.groupby(filtered_sales['Order time'].dt.date).agg({
-        'Gross sales': 'sum',
-        'Revenue': 'sum',
-        'Order ID': 'count'
-    }).reset_index()
-    daily_sales.columns = ['Date', 'Gross Sales', 'Revenue', 'Orders']
-    
-    # Create line chart
-    fig_daily = go.Figure()
-    fig_daily.add_trace(go.Scatter(
-        x=daily_sales['Date'],
-        y=daily_sales['Gross Sales'],
-        name='Gross Sales',
-        line=dict(color='#667eea', width=3),
-        fill='tozeroy',
-        fillcolor='rgba(102, 126, 234, 0.1)'
-    ))
-    fig_daily.add_trace(go.Scatter(
-        x=daily_sales['Date'],
-        y=daily_sales['Revenue'],
-        name='Revenue',
-        line=dict(color='#FF6B6B', width=2, dash='dash')
-    ))
-    
-    fig_daily.update_layout(
-        title="Daily Sales Performance",
-        xaxis_title="Date",
-        yaxis_title="Amount (£)",
-        height=400,
-        hovermode='x unified'
+    fig_daily = px.bar(
+        daily_data, x='Date', y='Revenue', title='Daily Revenue',
+        color='Revenue', color_continuous_scale='Viridis'
     )
     st.plotly_chart(fig_daily, use_container_width=True)
-    
-    # Show data table
-    st.dataframe(daily_sales.style.format({
-        'Gross Sales': '£{:,.2f}',
-        'Revenue': '£{:,.2f}',
-        'Orders': '{:,.0f}'
-    }), use_container_width=True)
 
 with tab2:
-    st.subheader("Weekly Sales Analysis")
-    
-    # Group by week
-    filtered_sales['Week'] = filtered_sales['Order time'].dt.to_period('W')
-    weekly_sales = filtered_sales.groupby('Week').agg({
-        'Gross sales': 'sum',
-        'Revenue': 'sum',
-        'Order ID': 'count'
-    }).reset_index()
-    weekly_sales['Week'] = weekly_sales['Week'].astype(str)
-    weekly_sales.columns = ['Week', 'Gross Sales', 'Revenue', 'Orders']
-    
-    # Bar chart
-    fig_weekly = px.bar(
-        weekly_sales,
-        x='Week',
-        y='Gross Sales',
-        title="Weekly Gross Sales",
-        color='Gross Sales',
-        color_continuous_scale='Viridis'
-    )
-    fig_weekly.update_layout(height=400)
+    st.subheader("Weekly Sales")
+    filtered_sales['Week'] = filtered_sales['Order time'].dt.to_period('W').astype(str)
+    weekly_sales = filtered_sales.groupby('Week')['Revenue'].sum().reset_index()
+    fig_weekly = px.bar(weekly_sales, x='Week', y='Revenue', title='Weekly Revenue')
     st.plotly_chart(fig_weekly, use_container_width=True)
 
 with tab3:
-    st.subheader("Monthly Revenue Overview")
-    
-    # Group by month
-    filtered_sales['Month'] = filtered_sales['Order time'].dt.to_period('M')
-    monthly_sales = filtered_sales.groupby('Month').agg({
-        'Gross sales': 'sum',
-        'Revenue': 'sum',
-        'Order ID': 'count'
-    }).reset_index()
-    monthly_sales['Month'] = monthly_sales['Month'].astype(str)
-    monthly_sales.columns = ['Month', 'Gross Sales', 'Revenue', 'Orders']
-    
-    # Create bar chart
-    fig_monthly = go.Figure(data=[
-        go.Bar(name='Gross Sales', x=monthly_sales['Month'], y=monthly_sales['Gross Sales'], marker_color='#667eea'),
-        go.Bar(name='Revenue', x=monthly_sales['Month'], y=monthly_sales['Revenue'], marker_color='#FF6B6B')
-    ])
-    fig_monthly.update_layout(
-        title="Monthly Sales Comparison",
-        barmode='group',
-        height=400
-    )
+    st.subheader("Monthly Sales")
+    filtered_sales['Month'] = filtered_sales['Order time'].dt.to_period('M').astype(str)
+    monthly_sales = filtered_sales.groupby('Month')['Revenue'].sum().reset_index()
+    fig_monthly = px.bar(monthly_sales, x='Month', y='Revenue', title='Monthly Revenue')
     st.plotly_chart(fig_monthly, use_container_width=True)
 
 st.markdown("---")
 
 # ============================================================================
-# MEAL PERIOD ANALYSIS
+# SECTION 2.5: WEEKLY PATTERNS
 # ============================================================================
 
-st.header("🍽️ Meal Period Analysis")
-st.caption("Sales breakdown by meal times: Breakfast, Lunch, Evening, Dinner, Night Shift")
+st.header("📅 Weekly Trading Patterns")
+col1, col2 = st.columns([2, 1])
 
-# Define meal periods
-def categorize_meal_period(hour):
-    if 8 <= hour < 12:
-        return "🌅 Breakfast (8am-12pm)"
-    elif 12 <= hour < 16:
-        return "🍽️ Lunch (12pm-4pm)"
-    elif 16 <= hour < 20:
-        return "🌆 Evening (4pm-8pm)"
-    elif 20 <= hour < 24:
-        return "🌙 Dinner (8pm-12am)"
-    else:  # 0-7 hours
-        return "🌃 Night Shift (12am-8am)"
+# Data Prep for Weekly Patterns
+pattern_data = filtered_sales.copy()
+pattern_data['Day Name'] = pattern_data['Order time'].dt.day_name()
+day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-# Add meal period to data
-meal_data = filtered_sales.copy()
-meal_data['Hour'] = meal_data['Order time'].dt.hour
-meal_data['Meal Period'] = meal_data['Hour'].apply(categorize_meal_period)
-
-# Calculate metrics by meal period
-meal_summary = meal_data.groupby('Meal Period').agg({
+# Group by Day
+weekly_stats = pattern_data.groupby('Day Name').agg({
     'Revenue': 'sum',
-    'Gross sales': 'sum',
-    'Order ID': 'count'
-}).reset_index()
-meal_summary.columns = ['Meal Period', 'Revenue', 'Gross Sales', 'Orders']
+    'Order ID': 'count',
+    'Gross sales': 'mean'
+}).reindex(day_order).fillna(0).reset_index()
+weekly_stats.columns = ['Day', 'Total Revenue', 'Orders', 'Avg Order Value']
 
-# Calculate percentages
-total_revenue = meal_summary['Revenue'].sum()
-meal_summary['% of Sales'] = (meal_summary['Revenue'] / total_revenue * 100).round(1)
-meal_summary['Avg Order Value'] = (meal_summary['Gross Sales'] / meal_summary['Orders']).round(2)
-
-# Sort by revenue descending
-meal_summary = meal_summary.sort_values('Revenue', ascending=False)
-
-# Create two columns
-col1, col2 = st.columns([3, 2])
+# Find Busiest/Slowest
+if not weekly_stats['Total Revenue'].sum() == 0:
+    busiest_day = weekly_stats.loc[weekly_stats['Total Revenue'].idxmax()]
+    # Filter for non-zero days to find slowest OPERATING day
+    operating_days = weekly_stats[weekly_stats['Total Revenue'] > 0]
+    if not operating_days.empty:
+        slowest_day = operating_days.loc[operating_days['Total Revenue'].idxmin()]
+    else:
+        slowest_day = weekly_stats.iloc[0]
+else:
+    busiest_day = weekly_stats.iloc[0]
+    slowest_day = weekly_stats.iloc[0]
 
 with col1:
-    # Pie chart
-    st.subheader("📊 Revenue Distribution by Meal Period")
-    
-    fig_pie = px.pie(
-        meal_summary,
-        values='Revenue',
-        names='Meal Period',
-        title='Sales Share by Meal Time',
-        color_discrete_sequence=px.colors.qualitative.Set3
+    fig_week = px.bar(
+        weekly_stats, 
+        x='Day', 
+        y='Total Revenue', 
+        title='Average Revenue by Day of Week',
+        color='Total Revenue',
+        color_continuous_scale='Viridis'
     )
-    fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-    fig_pie.update_layout(height=400)
-    st.plotly_chart(fig_pie, use_container_width=True)
+    fig_week.update_layout(height=350, xaxis_title=None)
+    st.plotly_chart(fig_week, use_container_width=True)
 
 with col2:
-    # Top performers
-    st.subheader("🏆 Best & Worst Performers")
+    st.subheader("🏆 Day Performance")
     
-    best_period = meal_summary.iloc[0]
-    worst_period = meal_summary.iloc[-1]
+    # Busiest Day Card
+    st.success(f"**Busiest Day:** {busiest_day['Day']}\n\n💰 £{busiest_day['Total Revenue']:,.0f} ({int(busiest_day['Orders'])} Orders)")
     
-    st.success(f"**Best: {best_period['Meal Period']}**")
-    st.write(f"- Revenue: £{best_period['Revenue']:,.2f}")
-    st.write(f"- Share: {best_period['% of Sales']:.1f}%")
-    st.write(f"- Orders: {best_period['Orders']:,.0f}")
+    # Slowest Day Card
+    st.info(f"**Slowest Day:** {slowest_day['Day']}\n\n💤 £{slowest_day['Total Revenue']:,.0f} ({int(slowest_day['Orders'])} Orders)")
     
-    st.markdown("---")
-    
-    st.error(f"**Slowest: {worst_period['Meal Period']}**")
-    st.write(f"- Revenue: £{worst_period['Revenue']:,.2f}")
-    st.write(f"- Share: {worst_period['% of Sales']:.1f}%")
-    st.write(f"- Orders: {worst_period['Orders']:,.0f}")
-
-# Detailed table
-st.subheader("📋 Detailed Meal Period Breakdown")
-
-# Format the dataframe
-display_summary = meal_summary.copy()
-display_summary['Revenue'] = display_summary['Revenue'].apply(lambda x: f"£{x:,.2f}")
-display_summary['Gross Sales'] = display_summary['Gross Sales'].apply(lambda x: f"£{x:,.2f}")
-display_summary['Orders'] = display_summary['Orders'].apply(lambda x: f"{x:,.0f}")
-display_summary['% of Sales'] = display_summary['% of Sales'].apply(lambda x: f"{x:.1f}%")
-display_summary['Avg Order Value'] = display_summary['Avg Order Value'].apply(lambda x: f"£{x:.2f}")
-
-st.dataframe(display_summary, hide_index=True, use_container_width=True)
-
-# Insights
-st.info("💡 **Pro Tip**: Focus marketing efforts on your slowest period to balance revenue throughout the day!")
+    avg_rev = weekly_stats[weekly_stats['Total Revenue']>0]['Total Revenue'].mean() if not weekly_stats[weekly_stats['Total Revenue']>0].empty else 0
+    st.metric("Avg Daily Revenue", f"£{avg_rev:,.0f}")
 
 st.markdown("---")
 
 # ============================================================================
-# REQUIREMENT 2: DELIVERY VS DINE-IN ANALYSIS
+# SECTION 3: DISPATCH & CHANNELS
 # ============================================================================
 
-st.header("🚚 Delivery vs Dine-In Analysis")
-
+st.header("📦 Dispatch & Sales Channels")
 col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Sales by Dispatch Type")
-    
-    # Group by dispatch type
-    dispatch_sales = filtered_sales.groupby('Dispatch type').agg({
-        'Gross sales': 'sum',
-        'Order ID': 'count'
-    }).reset_index()
-    dispatch_sales.columns = ['Dispatch Type', 'Total Sales', 'Orders']
-    
-    # Pie chart
-    fig_dispatch = px.pie(
-        dispatch_sales,
-        values='Total Sales',
-        names='Dispatch Type',
-        title="Revenue Distribution by Dispatch Type",
-        color_discrete_sequence=px.colors.qualitative.Set3
-    )
-    fig_dispatch.update_traces(textposition='inside', textinfo='percent+label')
+    dispatch_sales = filtered_sales.groupby('Dispatch type').agg({'Gross sales': 'sum'}).reset_index()
+    fig_dispatch = px.pie(dispatch_sales, values='Gross sales', names='Dispatch type', title='Revenue Share', hole=0.4)
     st.plotly_chart(fig_dispatch, use_container_width=True)
 
 with col2:
-    st.subheader("Order Count by Type")
-    
-    # Bar chart for order count
-    fig_dispatch_orders = px.bar(
-        dispatch_sales,
-        x='Dispatch Type',
-        y='Orders',
-        title="Number of Orders by Dispatch Type",
-        color='Orders',
-        color_continuous_scale='Blues'
-    )
-    st.plotly_chart(fig_dispatch_orders, use_container_width=True)
-
-# Dispatch type breakdown table
-st.subheader("Detailed Breakdown")
-dispatch_sales['Avg Order Value'] = dispatch_sales['Total Sales'] / dispatch_sales['Orders']
-st.dataframe(dispatch_sales.style.format({
-    'Total Sales': '£{:,.2f}',
-    'Orders': '{:,.0f}',
-    'Avg Order Value': '£{:,.2f}'
-}), use_container_width=True)
-
-st.markdown("---")
-
-# ============================================================================
-# REQUIREMENT 3: SALES CHANNEL ANALYSIS
-# ============================================================================
-
-st.header("📱 Sales Channel Performance")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Revenue by Sales Channel")
-    
-    # Group by sales channel
-    channel_sales = filtered_sales.groupby('Sales channel type').agg({
-        'Gross sales': 'sum',
-        'Order ID': 'count'
-    }).reset_index().sort_values('Gross sales', ascending=False)
-    channel_sales.columns = ['Channel', 'Total Sales', 'Orders']
-    
-    # Horizontal bar chart
-    fig_channel = px.bar(
-        channel_sales,
-        y='Channel',
-        x='Total Sales',
-        orientation='h',
-        title="Sales by Channel",
-        color='Total Sales',
-        color_continuous_scale='Sunset'
-    )
+    st.subheader("Sales by Channel")
+    channel_sales = filtered_sales.groupby('Sales channel name').agg({'Gross sales': 'sum'}).reset_index()
+    fig_channel = px.bar(channel_sales, x='Sales channel name', y='Gross sales', title='Revenue by Platform', color='Gross sales')
     st.plotly_chart(fig_channel, use_container_width=True)
 
-with col2:
-    st.subheader("Channel Market Share")
-    
-    # Donut chart
-    fig_channel_pie = px.pie(
-        channel_sales,
-        values='Total Sales',
-        names='Channel',
-        hole=0.4,
-        title="Market Share by Channel"
-    )
-    st.plotly_chart(fig_channel_pie, use_container_width=True)
-
-# Channel comparison table
-st.subheader("Channel Performance Metrics")
-channel_sales['Avg Order'] = channel_sales['Total Sales'] / channel_sales['Orders']
-channel_sales['Market Share %'] = (channel_sales['Total Sales'] / channel_sales['Total Sales'].sum() * 100).round(2)
-st.dataframe(channel_sales.style.format({
-    'Total Sales': '£{:,.2f}',
-    'Orders': '{:,.0f}',
-    'Avg Order': '£{:,.2f}',
-    'Market Share %': '{:.2f}%'
-}), use_container_width=True)
-
 st.markdown("---")
 
 # ============================================================================
-# REQUIREMENT 4: DEMAND FORECASTING & PEAK HOURS
+# SECTION 4: HOURLY & MEAL PERIOD
 # ============================================================================
 
-st.header("⏰ Demand Forecasting & Peak Hours Analysis")
+st.header("🕐 Hourly & Meal Period Analysis")
 
-col1, col2 = st.columns(2)
+# 1. Precise Hourly Calculation (0-23)
+hourly_data = filtered_sales.copy()
+hourly_data['Hour'] = hourly_data['Order time'].dt.hour
+hourly_stats = hourly_data.groupby('Hour')['Revenue'].sum().reset_index()
 
-with col1:
-    st.subheader("Hourly Sales Pattern")
+# Complete the 0-23 range
+all_hours = pd.DataFrame({'Hour': range(24)})
+hourly_stats = all_hours.merge(hourly_stats, on='Hour', how='left').fillna(0)
+
+# Identify Peaks
+hourly_stats['Hour Label'] = hourly_stats['Hour'].apply(
+    lambda h: datetime.strptime(str(int(h)), "%H").strftime("%I %p").lstrip("0")
+)
+
+# Identify Top 3 Peaks
+top_3_hours = hourly_stats.sort_values('Revenue', ascending=False).head(3)
+
+# Identify Top 3 Slowest (Operating hours -> non-zero revenue)
+operating_hours = hourly_stats[hourly_stats['Revenue'] > 0]
+bottom_3_hours = operating_hours.sort_values('Revenue', ascending=True).head(3)
+
+# Metrics Columns
+m1, m2 = st.columns(2)
+
+def styled_metric_box(hour, revenue, rank, is_peak=True):
+    color = "#FF6B6B" if is_peak else "#667eea"
+    icon = "🔥" if is_peak else "💤"
+    # Convert hex to rgb for rgba background
+    r = int(color[1:3], 16)
+    g = int(color[3:5], 16)
+    b = int(color[5:7], 16)
+    bg_color = f"rgba({r}, {g}, {b}, 0.1)"
     
-    # Group by hour
-    hourly_sales = filtered_sales.copy()
-    hourly_sales['Hour'] = hourly_sales['Order time'].dt.hour
-    hourly_pattern = hourly_sales.groupby('Hour').agg({
-        'Gross sales': 'sum',
-        'Order ID': 'count'
-    }).reset_index()
-    hourly_pattern.columns = ['Hour', 'Total Sales', 'Orders']
-    
-    # Line chart for hourly pattern
-    fig_hourly = go.Figure()
-    fig_hourly.add_trace(go.Scatter(
-        x=hourly_pattern['Hour'],
-        y=hourly_pattern['Total Sales'],
-        mode='lines+markers',
-        name='Sales',
-        line=dict(color='#667eea', width=3),
-        marker=dict(size=8)
-    ))
-    fig_hourly.update_layout(
-        title="Sales by Hour of Day",
-        xaxis_title="Hour (24h format)",
-        yaxis_title="Total Sales (£)",
-        height=400
-    )
-    st.plotly_chart(fig_hourly, use_container_width=True)
+    st.markdown(f"""
+    <div style="
+        background-color: {bg_color};
+        border-left: 5px solid {color};
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    ">
+        <div style="font-size: 1.1em; font-weight: bold;">
+            <span style="opacity: 0.7; margin-right: 8px;">#{rank}</span> {icon} {hour}
+        </div>
+        <div style="font-size: 1.2em; font-weight: bold; color: {color};">
+            £{revenue:,.0f}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col2:
-    st.subheader("Order Volume by Hour")
-    
-    # Bar chart for order count
-    fig_hourly_orders = px.bar(
-        hourly_pattern,
-        x='Hour',
-        y='Orders',
-        title="Number of Orders by Hour",
-        color='Orders',
-        color_continuous_scale='Reds'
-    )
-    fig_hourly_orders.update_layout(height=400)
-    st.plotly_chart(fig_hourly_orders, use_container_width=True)
-
-# Helper function to format hour as 12-hour AM/PM
-def format_hour_12h(hour):
-    hour = int(hour)
-    if hour == 0:
-        return "12:00 AM"
-    elif hour < 12:
-        return f"{hour}:00 AM"
-    elif hour == 12:
-        return "12:00 PM"
+with m1:
+    st.subheader("🔥 Top 3 Busiest Hours")
+    if not top_3_hours.empty:
+        for i, (_, row) in enumerate(top_3_hours.iterrows(), 1):
+            styled_metric_box(row['Hour Label'], row['Revenue'], i, is_peak=True)
     else:
-        return f"{hour - 12}:00 PM"
+        st.info("No data available")
 
-# Peak hours identification
-st.subheader("🔥 Peak Hours Identification")
+with m2:
+    st.subheader("💤 Top 3 Quietest Hours")
+    if not bottom_3_hours.empty:
+        for i, (_, row) in enumerate(bottom_3_hours.iterrows(), 1):
+            styled_metric_box(row['Hour Label'], row['Revenue'], i, is_peak=False)
+    else:
+        st.info("No data available")
 
-top_hours = hourly_pattern.nlargest(5, 'Total Sales')[['Hour', 'Total Sales', 'Orders']].copy()
-top_hours['Avg Order Value'] = top_hours['Total Sales'] / top_hours['Orders']
-top_hours['Time'] = top_hours['Hour'].apply(format_hour_12h)
+st.markdown("##### 📈 24-Hour Activity Trend")
+# Line Chart
+fig_hourly = px.line(
+    hourly_stats, 
+    x='Hour', 
+    y='Revenue', 
+    markers=True
+)
+fig_hourly.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=hourly_stats['Hour'],
+        ticktext=hourly_stats['Hour Label'],
+        title="Time of Day"
+    ),
+    yaxis=dict(title="Total Revenue (£)"),
+    height=300,
+    margin=dict(l=20, r=20, t=20, b=20)
+)
+st.plotly_chart(fig_hourly, use_container_width=True)
 
-col1, col2, col3 = st.columns(3)
+# Meal Period Analysis (Existing Logic)
+st.subheader("🍱 Meal Period Breakdown")
 
+def categorize_meal_period(hour):
+    if 8 <= hour < 12: return "🌅 Breakfast (8am-12pm)"
+    elif 12 <= hour < 16: return "🍽️ Lunch (12pm-4pm)"
+    elif 16 <= hour < 20: return "🌆 Evening (4pm-8pm)"
+    elif 20 <= hour < 24: return "🌙 Dinner (8pm-12am)"
+    else: return "🌃 Night Shift (12am-8am)"
+
+meal_data = filtered_sales.copy()
+meal_data['Hour'] = meal_data['Order time'].dt.hour
+meal_data['Meal Period'] = meal_data['Hour'].apply(categorize_meal_period)
+
+meal_summary = meal_data.groupby('Meal Period').agg({'Revenue': 'sum', 'Order ID': 'count'}).reset_index()
+meal_summary.columns = ['Meal Period', 'Revenue', 'Orders']
+meal_summary = meal_summary.sort_values('Revenue', ascending=False)
+
+col1, col2 = st.columns([3, 2])
 with col1:
-    st.metric("🥇 Peak Hour", top_hours.iloc[0]['Time'], f"£{top_hours.iloc[0]['Total Sales']:,.0f}")
+    fig_pie = px.pie(meal_summary, values='Revenue', names='Meal Period', title='Sales Share by Meal Time', color_discrete_sequence=px.colors.qualitative.Set3)
+    st.plotly_chart(fig_pie, use_container_width=True)
 
 with col2:
-    st.metric("🥈 2nd Peak", top_hours.iloc[1]['Time'], f"£{top_hours.iloc[1]['Total Sales']:,.0f}")
-
-with col3:
-    st.metric("🥉 3rd Peak", top_hours.iloc[2]['Time'], f"£{top_hours.iloc[2]['Total Sales']:,.0f}")
-
-st.dataframe(top_hours[['Time', 'Total Sales', 'Orders', 'Avg Order Value']].style.format({
-    'Total Sales': '£{:,.2f}',
-    'Orders': '{:,.0f}',
-    'Avg Order Value': '£{:,.2f}'
-}), use_container_width=True)
-
-# Slowest hours analysis
-st.subheader("🌙 Slowest Hours (Cost Optimization Opportunities)")
-st.caption("Identify quiet periods for reduced staffing or targeted promotions")
-
-# Get slowest 5 hours (excluding hours with 0 orders)
-slow_hours = hourly_pattern[hourly_pattern['Orders'] > 0].nsmallest(5, 'Total Sales')[['Hour', 'Total Sales', 'Orders']].copy()
-slow_hours['Avg Order Value'] = slow_hours['Total Sales'] / slow_hours['Orders']
-slow_hours['Time'] = slow_hours['Hour'].apply(format_hour_12h)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric("🌙 Slowest Hour", slow_hours.iloc[0]['Time'], f"£{slow_hours.iloc[0]['Total Sales']:,.0f}")
-
-with col2:
-    st.metric("💤 2nd Slowest", slow_hours.iloc[1]['Time'], f"£{slow_hours.iloc[1]['Total Sales']:,.0f}")
-
-with col3:
-    st.metric("😴 3rd Slowest", slow_hours.iloc[2]['Time'], f"£{slow_hours.iloc[2]['Total Sales']:,.0f}")
-
-st.dataframe(slow_hours[['Time', 'Total Sales', 'Orders', 'Avg Order Value']].style.format({
-    'Total Sales': '£{:,.2f}',
-    'Orders': '{:,.0f}',
-    'Avg Order Value': '£{:,.2f}'
-}), use_container_width=True)
-
-st.info("💡 **Pro Tip**: Consider running promotions during these hours or reducing staffing to optimize costs.")
-
-st.markdown("---")
-
-# Day of week analysis
-st.subheader("📅 Weekly Pattern Analysis")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    # Group by day of week
-    dow_sales = filtered_sales.copy()
-    dow_sales['Day of Week'] = dow_sales['Order time'].dt.day_name()
-    dow_pattern = dow_sales.groupby('Day of Week').agg({
-        'Gross sales': 'sum',
-        'Order ID': 'count'
-    }).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-    dow_pattern = dow_pattern.reset_index()
-    dow_pattern.columns = ['Day', 'Total Sales', 'Orders']
-    
-    # Bar chart
-    fig_dow = px.bar(
-        dow_pattern,
-        x='Day',
-        y='Total Sales',
-        title="Sales by Day of Week",
-        color='Total Sales',
-        color_continuous_scale='Viridis'
-    )
-    st.plotly_chart(fig_dow, use_container_width=True)
-
-with col2:
-    # Highlight busiest days
-    st.write("**Busiest Days:**")
-    busiest_days = dow_pattern.nlargest(3, 'Total Sales')
-    for idx, row in busiest_days.iterrows():
-        st.success(f"**{row['Day']}**: £{row['Total Sales']:,.2f} ({row['Orders']} orders)")
-
-st.markdown("---")
+    st.subheader("🏆 Best & Worst Periods")
+    if not meal_summary.empty:
+        best = meal_summary.iloc[0]
+        worst = meal_summary.iloc[-1]
+        st.success(f"**Best:** {best['Meal Period']} (£{best['Revenue']:,.0f})")
+        st.error(f"**Slowest:** {worst['Meal Period']} (£{worst['Revenue']:,.0f})")
 
 # ============================================================================
-# FOOTER
+# SECTION 5: MENU ANALYSIS (NEW)
 # ============================================================================
 
-st.markdown("---")
-st.caption("Dashboard built with ❤️ using Streamlit | Data from Flipdish POS")
-st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+# This function adds its own header and separator
+show_menu_analysis()

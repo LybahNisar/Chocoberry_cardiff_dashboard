@@ -1,0 +1,51 @@
+﻿============================================================
+HONEST DATA VERIFICATION
+============================================================
+
+1. TOTAL DATA:
+   Rows: 6524
+   Date Range: 2026-01-04 to 2026-02-13
+   Total Revenue: ú135,844.25
+
+2. COMPLETE DATA (Jan 4 - Feb 12):
+   Rows: 6505
+   Revenue: ú99,903.84
+
+3. WHAT DASHBOARD SHOULD SHOW:
+   If full range selected: ú135.8K
+   If Jan 4-Feb 12 selected: ú99.9K
+
+4. YOUR SCREENSHOT SHOWS:
+   ú100.2K
+
+5. VERDICT:
+py : Traceback (most recent call 
+last):
+At line:1 char:1
++ py scripts/honest_check.py 2>&1 | 
+Out-File -Encoding utf8 check_outpu 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSp 
+   ecified: (Traceback (most recen  
+  t call last)::String) [], Remot   
+ eException
+    + FullyQualifiedErrorId : Nativ 
+   eCommandError
+ 
+  File "C:\Users\GEO\Desktop\Dashboa
+rd\scripts\honest_check.py", line 
+37, in <module>
+    print(f"   \u2705 DASHBOARD IS 
+ACCURATE")
+  File "C:\Users\GEO\AppData\Local\P
+rograms\Python\Python312\Lib\encodin
+gs\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(inp
+ut,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec 
+can't encode character '\u2705' in 
+position 3: character maps to 
+<undefined>
