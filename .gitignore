@@ -46,3 +46,5 @@ desktop.ini
 *.log
 *.tmp
 .streamlit/cache/
+.env
+*.db
