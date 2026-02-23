@@ -1,0 +1,43 @@
+﻿=======================================================
+  MASTER MERGE & IMPORT ΓÇö FINAL
+=======================================================
+
+[1/6] Loading CSV files...
+  sales_data.csv       : 6,524 rows  [2026-01-04 -> 2026-02-13]
+  sales_data_21feb.csv : 2,450  rows  [2026-02-08 -> 2026-02-21]
+
+[2/6] Removing corrupted rows (NaN Order IDs)...
+  salesdata clean      : 6,523
+  21feb clean          : 2,449
+
+[3/6] Merging (no duplicates)...
+  Existing IDs (main)       : 6,523
+  New-only from 21feb       : 1,634
+  Merged unique orders      : 8,157
+
+[4/6] Verifying date coverage...
+  Earliest : 2026-01-04 21:24:40
+  Latest   : 2026-02-21 02:42:00
+  Jan 4    : 62 orders   PASS
+  Feb 21   : 15 orders  PASS
+
+[5/6] Backing up database and reimporting...
+  Backup: restaurant_data_BACKUP_20260221_171906.db
+
+[6/6] Final database audit...
+
+  =============================================
+  DASHBOARD KPI ΓÇö GROUND TRUTH
+  =============================================
+  Total Orders          : 8,157
+  Total Revenue   (GBP) : 125,841.64
+  Average Order   (GBP) : 14.81
+  Total Tax       (GBP) : 4,739.89
+  Total Delivery  (GBP) : 136.95
+  Date Start            : 2026-01-04 21:24:40
+  Date End              : 2026-02-21 02:42:00
+  Jan 4 Orders          : 62 (PASS)
+  Feb 21 Orders         : 15 (PASS)
+
+  OVERALL RESULT        : PASS
+  =============================================

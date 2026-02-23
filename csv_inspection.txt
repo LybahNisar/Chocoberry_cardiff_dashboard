@@ -1,0 +1,60 @@
+﻿
+=======================================================
+FILE : sales_data.csv
+Rows : 6,524
+Cols : 25
+ID col: Order ID  |  Unique IDs: 6523  |  NaN IDs: 1
+Start: 2026-01-04 21:24:40
+End  : 2026-02-13 00:49:00
+Cols : ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source', 'Dispatch type'] ...
+
+=======================================================
+FILE : sales_data_13feb.csv
+Rows : 2,299
+Cols : 25
+ID col: Order ID  |  Unique IDs: 2298  |  NaN IDs: 1
+Start: 2026-01-31 00:05:00
+End  : 2026-02-13 00:49:00
+Cols : ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source', 'Dispatch type'] ...
+
+=======================================================
+FILE : sales_data_21feb.csv
+Rows : 2,450
+Cols : 25
+ID col: Order ID  |  Unique IDs: 2449  |  NaN IDs: 1
+Start: 2026-02-08 00:00:00
+End  : 2026-02-21 02:42:00
+Cols : ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source', 'Dispatch type'] ...
+
+=======================================================
+FILE : sales_data_BACKUP_FINAL.csv
+Rows : 2,299
+Cols : 25
+ID col: Order ID  |  Unique IDs: 2298  |  NaN IDs: 1
+Start: 2026-01-31 00:05:00
+End  : 2026-02-13 00:49:00
+Cols : ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source', 'Dispatch type'] ...
+
+=======================================================
+FILE : sales_data_BACKUP_before_13feb.csv
+Rows : 6,524
+Cols : 25
+ID col: Order ID  |  Unique IDs: 6523  |  NaN IDs: 1
+Start: 2026-01-04 21:24:40
+End  : 2026-02-06 01:13:30
+Cols : ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source', 'Dispatch type'] ...
+
+
+=======================================================
+CROSS-FILE DUPLICATE ANALYSIS
+=======================================================
+  Overlap (sales_data.csv <-> sales_data_13feb.csv): 2298 duplicate order IDs
+  Overlap (sales_data.csv <-> sales_data_21feb.csv): 815 duplicate order IDs
+  Overlap (sales_data.csv <-> sales_data_BACKUP_FINAL.csv): 2298 duplicate order IDs
+  Overlap (sales_data.csv <-> sales_data_BACKUP_before_13feb.csv): 6523 duplicate order IDs
+  Overlap (sales_data_13feb.csv <-> sales_data_21feb.csv): 815 duplicate order IDs
+  Overlap (sales_data_13feb.csv <-> sales_data_BACKUP_FINAL.csv): 2298 duplicate order IDs
+  Overlap (sales_data_13feb.csv <-> sales_data_BACKUP_before_13feb.csv): 2298 duplicate order IDs
+  Overlap (sales_data_21feb.csv <-> sales_data_BACKUP_FINAL.csv): 815 duplicate order IDs
+  Overlap (sales_data_21feb.csv <-> sales_data_BACKUP_before_13feb.csv): 815 duplicate order IDs
+  Overlap (sales_data_BACKUP_FINAL.csv <-> sales_data_BACKUP_before_13feb.csv): 2298 duplicate order IDs

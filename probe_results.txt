@@ -1,0 +1,39 @@
+﻿App ID: br1153
+Token (first 20 chars): 98d05f35dd072bb443d9...
+
+Status 200 | TotalRecordCount=12 | Data rows=12
+  URL: https://api.flipdish.co/api/v1.0/orders
+
+Status 404 | TotalRecordCount=N/A | Data rows=0
+  URL: https://api.flipdish.co/api/v1.0/br1153/orders
+  Error: <!DOCTYPE html>
+
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+
+<!--[if !IE]><!-->
+
+<html lang="en">
+
+<!--<![endif]-->
+
+
+Status 200 | TotalRecordCount=12 | Data rows=12
+  URL: https://api.flipdish.co/api/v1.0/orders?limit=20
+
+Status 404 | TotalRecordCount=N/A | Data rows=0
+  URL: https://api.flipdish.co/api/v1.0/br1153/orders?limit=20
+  Error: <!DOCTYPE html>
+
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+
+<!--[if !IE]><!-->
+
+<html lang="en">
+
+<!--<![endif]-->
+
+

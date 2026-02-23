@@ -1,0 +1,38 @@
+﻿Found Store: Chocoberry Cardiff  StoreId=72495
+Found Store: Chocoberry Cardiff  StoreId=73684
+
+[200] Basic /orders
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] With limit=100
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] With storeId=72495
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] With storeId=73684
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] With date range (last 30 days)
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] physicalRestaurantId filter
+       TotalRecordCount=0  |  rows returned=0
+
+[200] OrderState=ReadyToProcess
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] OrderState=AcceptedByRestaurant
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+
+[200] OrderState=Dispatched
+       TotalRecordCount=12  |  rows returned=12
+       Sample OrderId=178513252  Time=2026-02-18T23:00:45.573
+

@@ -1,0 +1,60 @@
+﻿
+=======================================================
+  1. DATABASE COVERAGE (Jan 4 - Feb 21)
+=======================================================
+  Total orders in DB        : 6,523
+  Earliest order            : 2026-01-04 21:24:40
+  Latest order              : 2026-02-13 00:49:00
+  Jan 4 orders              : 62
+  Feb 21 orders (today)     : 0
+
+=======================================================
+  2. KPI ACCURACY (All Time)
+=======================================================
+  Total Revenue (GBP)       : 100,181.99
+  Total Orders              : 6,523
+  Average Order Value (GBP) : 14.75
+  Total Tax (GBP)           : 3,724.55
+  Total Delivery (GBP)      : 120.03
+
+=======================================================
+  3. DAILY GAP CHECK (Feb 13 - Feb 21)
+=======================================================
+  2026-02-13  |    18 orders  |  LOW
+  2026-02-14  |     0 orders  |  MISSING
+  2026-02-15  |     0 orders  |  MISSING
+  2026-02-16  |     0 orders  |  MISSING
+  2026-02-17  |     0 orders  |  MISSING
+  2026-02-18  |     0 orders  |  MISSING
+  2026-02-19  |     0 orders  |  MISSING
+  2026-02-20  |     0 orders  |  MISSING
+  2026-02-21  |     0 orders  |  MISSING
+
+=======================================================
+  4. LIVE API FETCH TEST
+=======================================================
+  Fetched page 1: 12 orders (total so far: 12/12)
+
+  Total live orders in API window : 12
+  API window START  : 2026-02-11T20:52:15.433
+  API window END    : 2026-02-18T23:00:45.573
+
+  API Orders by Day:
+    2026-02-11  |  1 orders
+    2026-02-12  |  1 orders
+    2026-02-14  |  5 orders
+    2026-02-15  |  2 orders
+    2026-02-16  |  1 orders
+    2026-02-18  |  2 orders
+
+  API orders NOT yet in DB: 12
+  ACTION REQUIRED: Click 'Sync New Orders' in the dashboard sidebar!
+
+=======================================================
+  5. VERDICT
+=======================================================
+  Jan 4 data present       : PASS
+  Feb 21 data present      : SYNC NEEDED
+  Orders realistic (>5000) : PASS (6,523)
+  Revenue realistic(>50k)  : PASS (GBP 100,182)
+

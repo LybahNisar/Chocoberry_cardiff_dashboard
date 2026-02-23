@@ -1,0 +1,4 @@
+﻿Cols: ['Unnamed: 0', 'Property name', 'Order ID', 'Order time', 'Source']
+Min date: 2026-01-04 21:24:40
+Max date: 2026-02-13 00:49:00
+Jan 4 count: 62
